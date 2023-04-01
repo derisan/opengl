@@ -5,7 +5,23 @@
 
 #include "Macros.h"
 
-int main( void )
+const unsigned int kScreenWidth = 800;
+const unsigned int kScreenHeight = 600;
+
+void OnWindowSizeChange( GLFWwindow* window, int w, int h )
+{
+	glViewport( 0, 0, w, h );
+}
+
+void OnKeydown( GLFWwindow* window, int key, int scancode, int action, int mods )
+{
+	if ( key == GLFW_KEY_ESCAPE && action == GLFW_PRESS )
+	{
+		glfwSetWindowShouldClose( window, true );
+	}
+}
+
+int main( )
 {
 	GLFWwindow* window;
 
@@ -18,7 +34,7 @@ int main( void )
 	glfwWindowHint( GLFW_CONTEXT_VERSION_MINOR, 3 );
 	glfwWindowHint( GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE );
 
-	window = glfwCreateWindow( 640, 480, "Learn OpenGL", NULL, NULL );
+	window = glfwCreateWindow( kScreenWidth, kScreenHeight, "Learn OpenGL", NULL, NULL );
 	if ( NOT window )
 	{
 		glfwTerminate( );
@@ -27,17 +43,19 @@ int main( void )
 
 	glfwMakeContextCurrent( window );
 
+	glfwSetFramebufferSizeCallback( window, OnWindowSizeChange );
+	glfwSetKeyCallback( window, OnKeydown );
+
 	auto err = glewInit( );
 	if ( GLEW_OK != err )
 	{
 		std::cout << glewGetErrorString( err ) << std::endl;
 		return -1;
 	}
-	
-	std::cout << glGetString( GL_VERSION ) << std::endl;
 
 	while ( NOT glfwWindowShouldClose( window ) )
 	{
+		glClearColor( 0.2f, 0.3f, 0.3f, 1.0f );
 		glClear( GL_COLOR_BUFFER_BIT );
 
 		glfwSwapBuffers( window );
