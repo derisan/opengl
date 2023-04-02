@@ -58,10 +58,10 @@ int main( )
 	{
 		// Test
 		float vertices[ ] = {
-		-0.5f, -0.5f, 0.0f,
-		 0.5f, -0.5f, 0.0f,
-		 0.5f,  0.5f, 0.0f,
-		 -0.5f,  0.5f, 0.0f
+		-0.5f, -0.5f,  0.0f, 1.0f, 0.0f, 0.0f,
+		 0.5f, -0.5f,  0.0f, 0.0f, 1.0f, 0.0f,
+		 0.5f,  0.5f,  0.0f, 0.0f, 0.0f, 1.0f,
+		 -0.5f,  0.5f, 0.0f, 1.0f, 1.0f, 1.0f,
 		};
 
 		unsigned int indices[ ] = {
@@ -72,6 +72,7 @@ int main( )
 		VertexArray va;
 		VertexBuffer vb{ vertices, sizeof( vertices ) };
 		VertexLayout layout;
+		layout.Push<float>( 3 );
 		layout.Push<float>( 3 );
 		va.SetVertexBuffer( vb, layout );
 
@@ -88,7 +89,7 @@ int main( )
 			shader.Bind( );
 			va.Bind( );
 
-			glDrawElements( GL_TRIANGLES, va.GetNumIndices(), GL_UNSIGNED_INT, nullptr );
+			glDrawElements( GL_TRIANGLES, va.GetNumIndices( ), GL_UNSIGNED_INT, nullptr );
 
 			glfwSwapBuffers( window );
 
