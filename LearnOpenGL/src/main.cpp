@@ -4,6 +4,8 @@
 #include <iostream>
 
 #include "Macros.h"
+#include "Shader.h"
+#include "VertexArray.h"
 
 const unsigned int kScreenWidth = 800;
 const unsigned int kScreenHeight = 600;
@@ -30,8 +32,8 @@ int main( )
 		return -1;
 	}
 
-	glfwWindowHint( GLFW_CONTEXT_VERSION_MAJOR, 3 );
-	glfwWindowHint( GLFW_CONTEXT_VERSION_MINOR, 3 );
+	glfwWindowHint( GLFW_CONTEXT_VERSION_MAJOR, 4 );
+	glfwWindowHint( GLFW_CONTEXT_VERSION_MINOR, 6 );
 	glfwWindowHint( GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE );
 
 	window = glfwCreateWindow( kScreenWidth, kScreenHeight, "Learn OpenGL", NULL, NULL );
@@ -53,14 +55,45 @@ int main( )
 		return -1;
 	}
 
-	while ( NOT glfwWindowShouldClose( window ) )
 	{
-		glClearColor( 0.2f, 0.3f, 0.3f, 1.0f );
-		glClear( GL_COLOR_BUFFER_BIT );
+		// Test
+		float vertices[ ] = {
+		-0.5f, -0.5f, 0.0f,
+		 0.5f, -0.5f, 0.0f,
+		 0.5f,  0.5f, 0.0f,
+		 -0.5f,  0.5f, 0.0f
+		};
 
-		glfwSwapBuffers( window );
+		unsigned int indices[ ] = {
+			0, 1, 2,
+			0, 2, 3
+		};
 
-		glfwPollEvents( );
+		VertexArray va;
+		VertexBuffer vb{ vertices, sizeof( vertices ) };
+		VertexLayout layout;
+		layout.Push<float>( 3 );
+		va.SetVertexBuffer( vb, layout );
+
+		IndexBuffer ib{ indices, std::size( indices ) };
+		va.SetIndexBuffer( ib );
+
+		Shader shader{ "Assets/vs.glsl", "Assets/fs.glsl" };
+
+		while ( NOT glfwWindowShouldClose( window ) )
+		{
+			glClearColor( 0.2f, 0.3f, 0.3f, 1.0f );
+			glClear( GL_COLOR_BUFFER_BIT );
+
+			shader.Bind( );
+			va.Bind( );
+
+			glDrawElements( GL_TRIANGLES, va.GetNumIndices(), GL_UNSIGNED_INT, nullptr );
+
+			glfwSwapBuffers( window );
+
+			glfwPollEvents( );
+		}
 	}
 
 	glfwTerminate( );
