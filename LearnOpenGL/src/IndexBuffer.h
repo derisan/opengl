@@ -1,21 +1,22 @@
 #pragma once
 
 #include <glew/glew.h>
+#include "GLObject.h"
 
 class IndexBuffer
+	: public GLObject
 {
 public:
 	IndexBuffer( ) = default;
 	IndexBuffer( const unsigned int* indices, unsigned int count );
 	~IndexBuffer( );
 
-	void Bind( ) const;
-	void Unbind( ) const;
+	virtual void Bind( ) const override;
+	virtual void Unbind( ) const override;
 
 	unsigned int GetNumIndices( ) const;
 
 private:
-	unsigned int mObjectID = { 0 };
 	unsigned int mNumIndices = { 0 };
 };
 

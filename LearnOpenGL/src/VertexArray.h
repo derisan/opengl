@@ -1,10 +1,12 @@
 #pragma once
 
+#include "GLObject.h"
 #include "IndexBuffer.h"
 #include "VertexBuffer.h"
 #include "VertexLayout.h"
 
 class VertexArray
+	: public GLObject
 {
 public:
 	VertexArray( );
@@ -13,14 +15,12 @@ public:
 	void SetVertexBuffer( const VertexBuffer& buffer, const VertexLayout& layout );
 	void SetIndexBuffer( const IndexBuffer& buffer );
 
-	void Bind( ) const;
-	void Unbind( ) const;
+	virtual void Bind( ) const override;
+	virtual void Unbind( ) const override;
 
 	unsigned int GetNumIndices( ) const;
 
 private:
-	unsigned int mObjectID = { 0 };
-
 	VertexBuffer mVertexBuffer;
 	IndexBuffer mIndexBuffer;
 };

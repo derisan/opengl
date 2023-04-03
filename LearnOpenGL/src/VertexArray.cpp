@@ -4,12 +4,12 @@
 
 VertexArray::VertexArray( )
 {
-	GLCall( glCreateVertexArrays( 1, &mObjectID ) );
+	GLCall( glCreateVertexArrays( 1, &ObjectID ) );
 }
 
 VertexArray::~VertexArray( )
 {
-	GLCall( glDeleteVertexArrays( 1, &mObjectID ) );
+	GLCall( glDeleteVertexArrays( 1, &ObjectID ) );
 }
 
 void VertexArray::SetVertexBuffer( const VertexBuffer& buffer, const VertexLayout& layout )
@@ -21,7 +21,7 @@ void VertexArray::SetVertexBuffer( const VertexBuffer& buffer, const VertexLayou
 
 	const auto& attribs = layout.GetAttributes( );
 	const auto stride = layout.GetStride( );
-	unsigned int offset = 0;
+	unsigned long long offset = 0;
 	for ( auto i = 0; i < attribs.size( ); i++ )
 	{
 		const auto& attrib = attribs[ i ];
@@ -48,7 +48,7 @@ void VertexArray::SetIndexBuffer( const IndexBuffer& buffer )
 
 void VertexArray::Bind( ) const
 {
-	GLCall( glBindVertexArray( mObjectID ) );
+	GLCall( glBindVertexArray( ObjectID ) );
 }
 
 void VertexArray::Unbind( ) const

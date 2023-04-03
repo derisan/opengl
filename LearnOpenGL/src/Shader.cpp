@@ -7,7 +7,7 @@
 
 Shader::Shader( std::string_view vsFilePath, std::string_view fsFilePath )
 {
-	GLCall( mProgramID = glCreateProgram( ) );
+	GLCall( ObjectID = glCreateProgram( ) );
 
 	std::string vertexShaderSource = parseShader( vsFilePath );
 	std::string fragmentShaderSource = parseShader( fsFilePath );
@@ -15,9 +15,9 @@ Shader::Shader( std::string_view vsFilePath, std::string_view fsFilePath )
 	auto vsID = createShader( vertexShaderSource, GL_VERTEX_SHADER );
 	auto fsID = createShader( fragmentShaderSource, GL_FRAGMENT_SHADER );
 
-	GLCall( glAttachShader( mProgramID, vsID ) );
-	GLCall( glAttachShader( mProgramID, fsID ) );
-	GLCall( glLinkProgram( mProgramID ) );
+	GLCall( glAttachShader( ObjectID, vsID ) );
+	GLCall( glAttachShader( ObjectID, fsID ) );
+	GLCall( glLinkProgram( ObjectID ) );
 
 	GLCall( glDeleteShader( vsID ) );
 	GLCall( glDeleteShader( fsID ) );
@@ -25,12 +25,12 @@ Shader::Shader( std::string_view vsFilePath, std::string_view fsFilePath )
 
 Shader::~Shader( )
 {
-	GLCall( glDeleteProgram( mProgramID ) );
+	GLCall( glDeleteProgram( ObjectID ) );
 }
 
 void Shader::Bind( ) const
 {
-	GLCall( glUseProgram( mProgramID ) );
+	GLCall( glUseProgram( ObjectID ) );
 }
 
 void Shader::Unbind( ) const
@@ -91,7 +91,7 @@ int Shader::getUniformLocation( std::string_view uniformName )
 	} 
 	else
 	{
-		int location = glGetUniformLocation( mProgramID, uniformName.data( ) );
+		int location = glGetUniformLocation( ObjectID, uniformName.data( ) );
 		ASSERT( location != -1 );
 		mUniformsMap.emplace( uniformName, location );
 		return location;

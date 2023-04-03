@@ -76,7 +76,7 @@ int main( )
 		layout.Push<float>( 3 );
 		va.SetVertexBuffer( vb, layout );
 
-		IndexBuffer ib{ indices, std::size( indices ) };
+		IndexBuffer ib{ indices, static_cast<unsigned int>(std::size( indices )) };
 		va.SetIndexBuffer( ib );
 
 		Shader shader{ "Assets/vs.glsl", "Assets/fs.glsl" };

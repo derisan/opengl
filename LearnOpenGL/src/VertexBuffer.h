@@ -2,17 +2,17 @@
 
 #include <glew/glew.h>
 
+#include "GLObject.h"
+
 class VertexBuffer
+	: public GLObject
 { 
 public:
 	VertexBuffer( ) = default;
 	VertexBuffer( const void* vertices, int bytes );
 	~VertexBuffer( );
 
-	void Bind( ) const;
-	void Unbind( ) const;
-
-private:
-	unsigned int mObjectID = { 0 };
+	virtual void Bind( ) const override;
+	virtual void Unbind( ) const override;
 };
 

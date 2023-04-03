@@ -4,14 +4,17 @@
 #include <string_view>
 #include <unordered_map>
 
+#include "GLObject.h"
+
 class Shader
+	: public GLObject
 {
 public:
 	Shader( std::string_view vsFilePath, std::string_view fsFilePath );
 	~Shader( );
 
-	void Bind( ) const;
-	void Unbind( ) const;
+	virtual void Bind( ) const override;
+	virtual void Unbind( ) const override;
 
 	void SetUniform4f( std::string_view uniformName, float x, float y, float z, float w );
 
@@ -22,7 +25,6 @@ private:
 	int getUniformLocation( std::string_view uniformName );
 
 private:
-	unsigned int mProgramID = { 0 };
 	std::unordered_map<std::string, int> mUniformsMap;
 };
 

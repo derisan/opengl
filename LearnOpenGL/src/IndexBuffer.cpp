@@ -7,7 +7,7 @@ const unsigned int kIndexBufferType = GL_ELEMENT_ARRAY_BUFFER;
 IndexBuffer::IndexBuffer( const unsigned int* indices, unsigned int count )
 	: mNumIndices{ count }
 {
-	GLCall(glGenBuffers( 1, &mObjectID ));
+	GLCall(glGenBuffers( 1, &ObjectID ));
 	Bind( );
 	GLCall(glBufferData( kIndexBufferType, sizeof( unsigned int ) * count, 
 				  reinterpret_cast< const void* >( indices ), GL_STATIC_DRAW ));
@@ -15,12 +15,12 @@ IndexBuffer::IndexBuffer( const unsigned int* indices, unsigned int count )
 
 IndexBuffer::~IndexBuffer( )
 {
-	GLCall(glDeleteBuffers( 1, &mObjectID ));
+	GLCall(glDeleteBuffers( 1, &ObjectID ));
 }
 
 void IndexBuffer::Bind( ) const
 {
-	GLCall(glBindBuffer( kIndexBufferType, mObjectID ));
+	GLCall(glBindBuffer( kIndexBufferType, ObjectID ));
 }
 
 void IndexBuffer::Unbind( ) const
