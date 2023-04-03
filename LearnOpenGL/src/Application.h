@@ -13,7 +13,10 @@ struct glfwDeleter
 	}
 };
 
-class Application
+// 상속하지 말 것
+// v-ptr가 생긴다면 콜백이 수행되지 않는다
+// setCallbacks() 참조
+class Application final
 {
 public:
 	Application( std::string_view title, int width, int height, int glVersionMajor,

@@ -4,7 +4,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <iostream>
-#include <vector>
 
 #include "Macros.h"
 #include "Shader.h"
@@ -57,7 +56,7 @@ void Application::Run( )
 						   glm::vec3( 0.0f, 0.0f, 1.0f ) );
 		wvp = glm::scale( wvp, glm::vec3( 0.5f, 0.5f, 0.5f ) );
 
-		object->SetWVPMatrix( wvp );
+		object->SetMVPMatrix( wvp );
 		object->Draw( shader );
 
 		wvp = glm::mat4{ 1.0f };
@@ -66,7 +65,7 @@ void Application::Run( )
 						   glm::vec3( 0.0f, 0.0f, 1.0f ) );
 		wvp = glm::scale( wvp, glm::vec3( 0.5f, 0.5f, 0.5f ) );
 
-		object2->SetWVPMatrix( wvp );
+		object2->SetMVPMatrix( wvp );
 		object2->Draw( shader );
 
 		glfwSwapBuffers( mWindow.get() );

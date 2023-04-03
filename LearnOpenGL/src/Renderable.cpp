@@ -6,7 +6,7 @@
 
 #include <string>
 
-const std::string kWVPUniformName = "uMVP";
+const std::string kMVPUniformName = "uMVP";
 
 std::string GetTextureUniformName( int slot );
 
@@ -20,9 +20,9 @@ void Renderable::SetTexture( const std::shared_ptr<Texture>& texture )
 	mTextures.push_back( texture );
 }
 
-void Renderable::SetWVPMatrix( const glm::mat4& mat )
+void Renderable::SetMVPMatrix( const glm::mat4& mat )
 {
-	mWorldViewProjection = mat;
+	mMVP = mat;
 }
 
 void Renderable::Draw( const Shader& shader ) const
@@ -37,8 +37,8 @@ void Renderable::Draw( const Shader& shader ) const
 		shader.SetUniform1i( GetTextureUniformName( i ), i );
 	}
 
-	// Set world-view-projection matrix uniform
-	shader.SetUniformMat4( kWVPUniformName, mWorldViewProjection );
+	// Set model-view-projection matrix uniform
+	shader.SetUniformMat4( kMVPUniformName, mMVP );
 
 	// Draw call
 	glDrawElements( GL_TRIANGLES, mVertexArray->GetNumIndices( ), GL_UNSIGNED_INT, nullptr );
