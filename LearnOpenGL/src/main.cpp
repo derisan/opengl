@@ -8,6 +8,10 @@
 #include "VertexArray.h"
 #include "Texture.h"
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
+
 const unsigned int kScreenWidth = 800;
 const unsigned int kScreenHeight = 600;
 
@@ -96,6 +100,13 @@ int main( )
 
 			shader.Bind( );
 			va.Bind( );
+
+			glm::mat4 mvp = glm::mat4{ 1.0f };
+			mvp = glm::translate( mvp, glm::vec3( 0.5f, 0.5f, 0.0f ) );
+			mvp = glm::rotate( mvp, glm::radians( static_cast< float >( glfwGetTime( ) ) * 30.0f ),
+							   glm::vec3( 0.0f, 0.0f, 1.0f ) );
+			mvp = glm::scale( mvp, glm::vec3( 0.5f, 0.5f, 0.5f ) );
+			shader.SetUniformMat4( "uMVP", mvp );
 
 			GLCall( glDrawElements( GL_TRIANGLES, va.GetNumIndices( ), GL_UNSIGNED_INT, nullptr ) );
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <glew/glew.h>
+#include <glm/glm.hpp>
 #include <string_view>
 #include <unordered_map>
 
@@ -17,6 +18,7 @@ public:
 	virtual void Unbind( ) const override;
 
 	void SetUniform4f( std::string_view uniformName, float x, float y, float z, float w );
+	void SetUniformMat4( std::string_view uniformName, const glm::mat4& mat );
 	void SetUniform1i( std::string_view uniformName, int x );
 
 private:

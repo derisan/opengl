@@ -2,6 +2,7 @@
 
 #include "Macros.h"
 
+#include <glm/gtc/type_ptr.hpp>
 #include <fstream>
 #include <sstream>
 
@@ -42,7 +43,14 @@ void Shader::SetUniform4f( std::string_view uniformName, float x, float y, float
 {
 	auto location = getUniformLocation( uniformName );
 	Bind( );
-	GLCall(glUniform4f( location, x, y, z, w ));
+	GLCall( glUniform4f( location, x, y, z, w ) );
+}
+
+void Shader::SetUniformMat4( std::string_view uniformName, const glm::mat4& mat )
+{
+	auto location = getUniformLocation( uniformName );
+	Bind( );
+	GLCall( glUniformMatrix4fv( location, 1, GL_FALSE, glm::value_ptr( mat ) ) );
 }
 
 void Shader::SetUniform1i( std::string_view uniformName, int x )
@@ -90,12 +98,12 @@ unsigned int Shader::createShader( std::string_view source, unsigned int shaderT
 
 int Shader::getUniformLocation( std::string_view uniformName )
 {
-	auto iter = mUniformsMap.find( uniformName.data() );
+	auto iter = mUniformsMap.find( uniformName.data( ) );
 
 	if ( iter != mUniformsMap.end( ) )
 	{
 		return iter->second;
-	} 
+	}
 	else
 	{
 		int location = glGetUniformLocation( ObjectID, uniformName.data( ) );
