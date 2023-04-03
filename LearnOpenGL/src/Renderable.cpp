@@ -37,7 +37,7 @@ void Renderable::Draw( const Shader& shader ) const
 		shader.SetUniform1i( GetTextureUniformName( i ), i );
 	}
 
-	// Set model-view-projection matrix uniform
+	// Set world-view-projection matrix uniform
 	shader.SetUniformMat4( kWVPUniformName, mWorldViewProjection );
 
 	// Draw call
