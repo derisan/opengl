@@ -2,6 +2,7 @@
 #include <glfw/glfw3.h>
 
 #include <iostream>
+#include <vector>
 
 #include "Macros.h"
 #include "Shader.h"
@@ -62,26 +63,26 @@ int main( )
 
 	{
 		// Test
-		float vertices[ ] = {
+		std::vector<float> vertices = {
 		-0.5f, -0.5f,  0.0f, 0.0f, 0.0f,
 		 0.5f, -0.5f,  0.0f, 1.0f, 0.0f,
 		 0.5f,  0.5f,  0.0f, 1.0f, 1.0f,
 		 -0.5f,  0.5f, 0.0f, 0.0f, 1.0f,
 		};
 
-		unsigned int indices[ ] = {
+		std::vector<unsigned int> indices = {
 			0, 1, 2,
 			0, 2, 3
 		};
 
 		VertexArray va;
-		VertexBuffer vb{ vertices, sizeof( vertices ) };
+		VertexBuffer vb{ vertices };
 		VertexLayout layout;
 		layout.Push<float>( 3 );
 		layout.Push<float>( 2 );
 		va.SetVertexBuffer( vb, layout );
 
-		IndexBuffer ib{ indices, static_cast< unsigned int >( std::size( indices ) ) };
+		IndexBuffer ib{ indices };
 		va.SetIndexBuffer( ib );
 
 		Shader shader{ "Assets/Shaders/vs.glsl", "Assets/Shaders/fs.glsl" };
