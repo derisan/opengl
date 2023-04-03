@@ -45,6 +45,13 @@ void Shader::SetUniform4f( std::string_view uniformName, float x, float y, float
 	GLCall(glUniform4f( location, x, y, z, w ));
 }
 
+void Shader::SetUniform1i( std::string_view uniformName, int x )
+{
+	auto location = getUniformLocation( uniformName );
+	Bind( );
+	GLCall( glUniform1i( location, x ) );
+}
+
 std::string Shader::parseShader( std::string_view filePath )
 {
 	std::ifstream file{ filePath.data( ) };

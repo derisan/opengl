@@ -6,6 +6,7 @@
 #include "Macros.h"
 #include "Shader.h"
 #include "VertexArray.h"
+#include "Texture.h"
 
 const unsigned int kScreenWidth = 800;
 const unsigned int kScreenHeight = 600;
@@ -58,10 +59,10 @@ int main( )
 	{
 		// Test
 		float vertices[ ] = {
-		-0.5f, -0.5f,  0.0f, 1.0f, 0.0f, 0.0f,
-		 0.5f, -0.5f,  0.0f, 0.0f, 1.0f, 0.0f,
-		 0.5f,  0.5f,  0.0f, 0.0f, 0.0f, 1.0f,
-		 -0.5f,  0.5f, 0.0f, 1.0f, 1.0f, 1.0f,
+		-0.5f, -0.5f,  0.0f, 0.0f, 0.0f,
+		 0.5f, -0.5f,  0.0f, 1.0f, 0.0f,
+		 0.5f,  0.5f,  0.0f, 1.0f, 1.0f,
+		 -0.5f,  0.5f, 0.0f, 0.0f, 1.0f,
 		};
 
 		unsigned int indices[ ] = {
@@ -73,23 +74,30 @@ int main( )
 		VertexBuffer vb{ vertices, sizeof( vertices ) };
 		VertexLayout layout;
 		layout.Push<float>( 3 );
-		layout.Push<float>( 3 );
+		layout.Push<float>( 2 );
 		va.SetVertexBuffer( vb, layout );
 
-		IndexBuffer ib{ indices, static_cast<unsigned int>(std::size( indices )) };
+		IndexBuffer ib{ indices, static_cast< unsigned int >( std::size( indices ) ) };
 		va.SetIndexBuffer( ib );
 
-		Shader shader{ "Assets/vs.glsl", "Assets/fs.glsl" };
+		Shader shader{ "Assets/Shaders/vs.glsl", "Assets/Shaders/fs.glsl" };
+
+		Texture texture1{ "Assets/images/container.jpg" };
+		Texture texture2{ "Assets/images/awesomeface.png" };
+		texture1.Bind( 0 );
+		texture2.Bind( 1 );
+		shader.SetUniform1i( "texture1", 0 );
+		shader.SetUniform1i( "texture2", 1 );
 
 		while ( NOT glfwWindowShouldClose( window ) )
 		{
-			glClearColor( 0.2f, 0.3f, 0.3f, 1.0f );
-			glClear( GL_COLOR_BUFFER_BIT );
+			GLCall( glClearColor( 0.2f, 0.3f, 0.3f, 1.0f ) );
+			GLCall( glClear( GL_COLOR_BUFFER_BIT ) );
 
 			shader.Bind( );
 			va.Bind( );
 
-			glDrawElements( GL_TRIANGLES, va.GetNumIndices( ), GL_UNSIGNED_INT, nullptr );
+			GLCall( glDrawElements( GL_TRIANGLES, va.GetNumIndices( ), GL_UNSIGNED_INT, nullptr ) );
 
 			glfwSwapBuffers( window );
 

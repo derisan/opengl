@@ -17,6 +17,7 @@ public:
 	virtual void Unbind( ) const override;
 
 	void SetUniform4f( std::string_view uniformName, float x, float y, float z, float w );
+	void SetUniform1i( std::string_view uniformName, int x );
 
 private:
 	std::string parseShader( std::string_view filePath );
