@@ -6,8 +6,6 @@
 
 #include <string>
 
-const std::string kMVPUniformName = "uMVP";
-
 std::string GetTextureUniformName( int slot );
 
 void Renderable::SetVertexArray( const std::shared_ptr<VertexArray> vertexArray )
@@ -20,9 +18,26 @@ void Renderable::SetTexture( const std::shared_ptr<Texture>& texture )
 	mTextures.push_back( texture );
 }
 
-void Renderable::SetMVPMatrix( const glm::mat4& mat )
+void Renderable::SetMVPMatrix( const glm::mat4& model, const glm::mat4& view, const glm::mat4& projection )
 {
-	mMVP = mat;
+	mModel = model;
+	mView = view;
+	mProjection = projection;
+}
+
+void Renderable::SetModelMatrix( const glm::mat4& mat )
+{
+	mModel = mat;
+}
+
+void Renderable::SetViewMatrix( const glm::mat4& mat )
+{
+	mView = mat;
+}
+
+void Renderable::SetProjectionMatrix( const glm::mat4& mat )
+{
+	mProjection = mat;
 }
 
 void Renderable::Draw( const Shader& shader ) const
@@ -38,7 +53,9 @@ void Renderable::Draw( const Shader& shader ) const
 	}
 
 	// Set model-view-projection matrix uniform
-	shader.SetUniformMat4( kMVPUniformName, mMVP );
+	shader.SetUniformMat4( "uModel", mModel);
+	shader.SetUniformMat4( "uView", mView );
+	shader.SetUniformMat4( "uProjection", mProjection);
 
 	// Draw call
 	glDrawElements( GL_TRIANGLES, mVertexArray->GetNumIndices( ), GL_UNSIGNED_INT, nullptr );

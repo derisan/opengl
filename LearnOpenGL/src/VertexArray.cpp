@@ -12,17 +12,69 @@ std::shared_ptr<VertexArray> VertexArray::GetVertexArray( std::string_view verte
 	}
 
 	// (TODO): create VBO, layout, EBO and VAO
-	std::vector<float> vertices = {
-		-0.5f, -0.5f,  0.0f, 0.0f, 0.0f,
-		 0.5f, -0.5f,  0.0f, 1.0f, 0.0f,
-		 0.5f,  0.5f,  0.0f, 1.0f, 1.0f,
-		 -0.5f,  0.5f, 0.0f, 0.0f, 1.0f,
-	};
 
-	std::vector<unsigned int> indices = {
-		0, 1, 2,
-		0, 2, 3
-	};
+	std::vector<float> vertices;
+	std::vector<unsigned int> indices;
+
+	if ( vertexArrayName == "Rectangle" )
+	{
+		vertices.reserve( 20 );
+		indices.reserve( 6 );
+
+		vertices.assign( {
+			-0.5f, -0.5f,  0.0f, 0.0f, 0.0f,
+			 0.5f, -0.5f,  0.0f, 1.0f, 0.0f,
+			 0.5f,  0.5f,  0.0f, 1.0f, 1.0f,
+			 -0.5f,  0.5f, 0.0f, 0.0f, 1.0f,
+						 } );
+
+		indices.assign( {
+			0, 1, 2,
+			0, 2, 3
+						} );
+	}
+	else if ( vertexArrayName == "Cube" )
+	{
+		vertices.reserve( 40 );
+		indices.reserve( 36 );
+
+		vertices.assign( {
+			-1.0f, -1.0f,  1.0f, 0.0f, 0.0f,//0
+			 1.0f, -1.0f,  1.0f, 1.0f, 0.0f,//1
+			-1.0f,  1.0f,  1.0f, 0.0f, 1.0f,//2
+			 1.0f,  1.0f,  1.0f, 1.0f, 1.0f,//3
+			-1.0f, -1.0f, -1.0f, 0.0f, 1.0f,//4
+			 1.0f, -1.0f, -1.0f, 1.0f, 0.0f,//5
+			-1.0f,  1.0f, -1.0f, 0.0f, 1.0f,//6
+			 1.0f,  1.0f, -1.0f, 1.0f, 1.0f,//7
+						 } );
+
+		indices.assign( {
+			//Top
+			2, 6, 7,
+			2, 3, 7,
+
+			//Bottom
+			0, 4, 5,
+			0, 1, 5,
+
+			//Left
+			0, 2, 6,
+			0, 4, 6,
+
+			//Right
+			1, 3, 7,
+			1, 5, 7,
+
+			//Front
+			0, 2, 3,
+			0, 1, 3,
+
+			//Back
+			4, 6, 7,
+			4, 5, 7
+						} );
+	}
 
 	VertexBuffer vb{ vertices };
 	VertexLayout layout;
@@ -34,7 +86,7 @@ std::shared_ptr<VertexArray> VertexArray::GetVertexArray( std::string_view verte
 	vertexArray->SetVertexBuffer( vb, layout );
 	vertexArray->SetIndexBuffer( ib );
 
-	sVertexArrays.emplace( "Rectangle", vertexArray );
+	sVertexArrays.emplace( vertexArrayName.data(), vertexArray );
 	return vertexArray;
 }
 

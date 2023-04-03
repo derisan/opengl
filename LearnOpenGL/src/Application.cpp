@@ -31,44 +31,60 @@ Application::~Application( )
 
 void Application::Run( )
 {
-	auto object = std::make_unique<Renderable>( );
-	object->SetTexture( Texture::GetTexture( "Assets/images/container.jpg" ) );
-	object->SetTexture( Texture::GetTexture( "Assets/images/awesomeface.png" ) );
-	object->SetVertexArray( VertexArray::GetVertexArray( "Rectangle" ) );
+	std::vector<std::unique_ptr<Renderable>> objects;
+	objects.reserve( 10 );
 
-	auto object2 = std::make_unique<Renderable>( );
-	object2->SetTexture( Texture::GetTexture( "Assets/images/container.jpg" ) );
-	object2->SetTexture( Texture::GetTexture( "Assets/images/carrot.png" ) );
-	object2->SetVertexArray( VertexArray::GetVertexArray( "Rectangle" ) );
+	for ( auto i = 0; i < 10; ++i )
+	{
+		auto object = std::make_unique<Renderable>( );
+		object->SetTexture( Texture::GetTexture( "Assets/images/container.jpg" ) );
+		object->SetTexture( Texture::GetTexture( "Assets/images/awesomeface.png" ) );
+		object->SetVertexArray( VertexArray::GetVertexArray( "Cube" ) );
+		objects.push_back( std::move( object ) );
+	}
+
+	glm::vec3 cubePositions[ ] = {
+		glm::vec3( 0.0f,  0.0f,  0.0f ),
+		glm::vec3( 2.0f,  5.0f, -15.0f ),
+		glm::vec3( -1.5f, -2.2f, -2.5f ),
+		glm::vec3( -3.8f, -2.0f, -12.3f ),
+		glm::vec3( 2.4f, -0.4f, -3.5f ),
+		glm::vec3( -1.7f,  3.0f, -7.5f ),
+		glm::vec3( 1.3f, -2.0f, -2.5f ),
+		glm::vec3( 1.5f,  2.0f, -2.5f ),
+		glm::vec3( 1.5f,  0.2f, -1.5f ),
+		glm::vec3( -1.3f,  1.0f, -1.5f )
+	};
 
 	Shader shader{ "Assets/Shaders/vs.glsl", "Assets/Shaders/fs.glsl" };
+
+	GLCall( glEnable( GL_DEPTH_TEST ) );
 
 	while ( NOT glfwWindowShouldClose( mWindow.get( ) ) )
 	{
 		GLCall( glClearColor( 0.2f, 0.3f, 0.3f, 1.0f ) );
-		GLCall( glClear( GL_COLOR_BUFFER_BIT ) );
+		GLCall( glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT ) );
 
 		shader.Bind( );
 
-		glm::mat4 wvp = glm::mat4{ 1.0f };
-		wvp = glm::translate( wvp, glm::vec3( 0.5f, 0.5f, 0.0f ) );
-		wvp = glm::rotate( wvp, glm::radians( static_cast< float >( glfwGetTime( ) ) * 30.0f ),
-						   glm::vec3( 0.0f, 0.0f, 1.0f ) );
-		wvp = glm::scale( wvp, glm::vec3( 0.5f, 0.5f, 0.5f ) );
+		for ( auto i = 0; i < objects.size( ); i++ )
+		{
+			auto& object = objects[ i ];
 
-		object->SetMVPMatrix( wvp );
-		object->Draw( shader );
+			glm::mat4 model = glm::mat4{ 1.0f };
+			model = glm::translate( model, cubePositions[ i ] );
+			model = glm::rotate( model, glm::radians( 20.0f * i ), glm::vec3( 1.0f, 0.3f, 0.5f ) );
+			glm::mat4 view = glm::mat4{ 1.0f };
+			view = glm::translate( view, glm::vec3( 0.0f, 0.0f, -10.0f ) );
+			glm::mat4 proj = glm::mat4{ 1.0f };
+			proj = glm::perspective( glm::radians( 45.0f ), mScreenWidth / static_cast< float >( mScreenHeight ),
+									 0.1f, 100.0f );
 
-		wvp = glm::mat4{ 1.0f };
-		wvp = glm::translate( wvp, glm::vec3( -0.5f, -0.5f, 0.0f ) );
-		wvp = glm::rotate( wvp, glm::radians( static_cast< float >( glfwGetTime( ) ) * 30.0f ),
-						   glm::vec3( 0.0f, 0.0f, 1.0f ) );
-		wvp = glm::scale( wvp, glm::vec3( 0.5f, 0.5f, 0.5f ) );
+			object->SetMVPMatrix( model, view, proj );
+			object->Draw( shader );
+		}
 
-		object2->SetMVPMatrix( wvp );
-		object2->Draw( shader );
-
-		glfwSwapBuffers( mWindow.get() );
+		glfwSwapBuffers( mWindow.get( ) );
 		glfwPollEvents( );
 	}
 }
