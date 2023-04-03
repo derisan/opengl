@@ -39,21 +39,21 @@ void Shader::Unbind( ) const
 	GLCall( glUseProgram( 0 ) );
 }
 
-void Shader::SetUniform4f( std::string_view uniformName, float x, float y, float z, float w )
+void Shader::SetUniform4f( std::string_view uniformName, float x, float y, float z, float w ) const
 {
 	auto location = getUniformLocation( uniformName );
 	Bind( );
 	GLCall( glUniform4f( location, x, y, z, w ) );
 }
 
-void Shader::SetUniformMat4( std::string_view uniformName, const glm::mat4& mat )
+void Shader::SetUniformMat4( std::string_view uniformName, const glm::mat4& mat ) const
 {
 	auto location = getUniformLocation( uniformName );
 	Bind( );
 	GLCall( glUniformMatrix4fv( location, 1, GL_FALSE, glm::value_ptr( mat ) ) );
 }
 
-void Shader::SetUniform1i( std::string_view uniformName, int x )
+void Shader::SetUniform1i( std::string_view uniformName, int x ) const
 {
 	auto location = getUniformLocation( uniformName );
 	Bind( );
@@ -96,7 +96,7 @@ unsigned int Shader::createShader( std::string_view source, unsigned int shaderT
 	return id;
 }
 
-int Shader::getUniformLocation( std::string_view uniformName )
+int Shader::getUniformLocation( std::string_view uniformName ) const
 {
 	auto iter = mUniformsMap.find( uniformName.data( ) );
 

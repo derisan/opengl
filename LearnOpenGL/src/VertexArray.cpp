@@ -2,6 +2,47 @@
 
 #include "Macros.h"
 
+std::shared_ptr<VertexArray> VertexArray::GetVertexArray( std::string_view vertexArrayName )
+{
+	auto iter = sVertexArrays.find( vertexArrayName.data( ) );
+
+	if ( iter != sVertexArrays.end( ) )
+	{
+		return iter->second;
+	}
+
+	// (TODO): create VBO, layout, EBO and VAO
+	std::vector<float> vertices = {
+		-0.5f, -0.5f,  0.0f, 0.0f, 0.0f,
+		 0.5f, -0.5f,  0.0f, 1.0f, 0.0f,
+		 0.5f,  0.5f,  0.0f, 1.0f, 1.0f,
+		 -0.5f,  0.5f, 0.0f, 0.0f, 1.0f,
+	};
+
+	std::vector<unsigned int> indices = {
+		0, 1, 2,
+		0, 2, 3
+	};
+
+	VertexBuffer vb{ vertices };
+	VertexLayout layout;
+	layout.Push<float>( 3 );
+	layout.Push<float>( 2 );
+	IndexBuffer ib{ indices };
+
+	auto vertexArray = std::make_shared<VertexArray>( );
+	vertexArray->SetVertexBuffer( vb, layout );
+	vertexArray->SetIndexBuffer( ib );
+
+	sVertexArrays.emplace( "Rectangle", vertexArray );
+	return vertexArray;
+}
+
+void VertexArray::Clear( )
+{
+	sVertexArrays.clear( );
+}
+
 VertexArray::VertexArray( )
 {
 	GLCall( glCreateVertexArrays( 1, &ObjectID ) );

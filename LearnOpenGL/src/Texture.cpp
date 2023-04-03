@@ -9,6 +9,27 @@
 
 std::string GetFileExtension( std::string_view fileName );
 
+std::shared_ptr<Texture> Texture::GetTexture( std::string_view fileName )
+{
+	const std::string file = { fileName.data( ) };
+
+	auto iter = sTextures.find( file );
+
+	if ( iter != sTextures.end( ) )
+	{
+		return iter->second;
+	}
+
+	auto newTexture = std::make_shared<Texture>( file );
+	sTextures.emplace( file, newTexture );
+	return newTexture;
+}
+
+void Texture::Clear( )
+{
+	sTextures.clear( );
+}
+
 Texture::Texture( std::string_view fileName )
 {
 	loadTexture( fileName );

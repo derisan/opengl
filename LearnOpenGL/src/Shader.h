@@ -17,17 +17,17 @@ public:
 	virtual void Bind( ) const override;
 	virtual void Unbind( ) const override;
 
-	void SetUniform4f( std::string_view uniformName, float x, float y, float z, float w );
-	void SetUniformMat4( std::string_view uniformName, const glm::mat4& mat );
-	void SetUniform1i( std::string_view uniformName, int x );
+	void SetUniform4f( std::string_view uniformName, float x, float y, float z, float w ) const;
+	void SetUniformMat4( std::string_view uniformName, const glm::mat4& mat ) const;
+	void SetUniform1i( std::string_view uniformName, int x ) const;
 
 private:
 	std::string parseShader( std::string_view filePath );
 	unsigned int createShader( std::string_view source, unsigned int shaderType );
 
-	int getUniformLocation( std::string_view uniformName );
+	int getUniformLocation( std::string_view uniformName ) const;
 
 private:
-	std::unordered_map<std::string, int> mUniformsMap;
+	mutable std::unordered_map<std::string, int> mUniformsMap;
 };
 

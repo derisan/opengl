@@ -5,9 +5,19 @@
 #include "VertexBuffer.h"
 #include "VertexLayout.h"
 
+#include <unordered_map>
+#include <memory>
+
 class VertexArray
 	: public GLObject
 {
+public:
+	static std::shared_ptr<VertexArray> GetVertexArray( std::string_view vertexArrayName );
+	static void Clear( );
+
+private:
+	inline static std::unordered_map<std::string, std::shared_ptr<VertexArray>> sVertexArrays;
+
 public:
 	VertexArray( );
 	~VertexArray( );

@@ -91,6 +91,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\IndexBuffer.cpp" />
+    <ClCompile Include="src\Renderable.cpp" />
     <ClCompile Include="src\Shader.cpp" />
     <ClCompile Include="src\Macros.cpp" />
     <ClCompile Include="src\Main.cpp" />
@@ -102,6 +103,7 @@
   <ItemGroup>
     <ClInclude Include="src\GLObject.h" />
     <ClInclude Include="src\IndexBuffer.h" />
+    <ClInclude Include="src\Renderable.h" />
     <ClInclude Include="src\Shader.h" />
     <ClInclude Include="src\Macros.h" />
     <ClInclude Include="src\VertexBuffer.h" />

@@ -8,6 +8,7 @@
 #include "Shader.h"
 #include "VertexArray.h"
 #include "Texture.h"
+#include "Renderable.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -62,37 +63,17 @@ int main( )
 	}
 
 	{
-		// Test
-		std::vector<float> vertices = {
-		-0.5f, -0.5f,  0.0f, 0.0f, 0.0f,
-		 0.5f, -0.5f,  0.0f, 1.0f, 0.0f,
-		 0.5f,  0.5f,  0.0f, 1.0f, 1.0f,
-		 -0.5f,  0.5f, 0.0f, 0.0f, 1.0f,
-		};
+		auto object = std::make_unique<Renderable>( );
+		object->SetTexture( Texture::GetTexture( "Assets/images/container.jpg" ) );
+		object->SetTexture( Texture::GetTexture( "Assets/images/awesomeface.png" ) );
+		object->SetVertexArray( VertexArray::GetVertexArray( "Rectangle" ) );
 
-		std::vector<unsigned int> indices = {
-			0, 1, 2,
-			0, 2, 3
-		};
-
-		VertexArray va;
-		VertexBuffer vb{ vertices };
-		VertexLayout layout;
-		layout.Push<float>( 3 );
-		layout.Push<float>( 2 );
-		va.SetVertexBuffer( vb, layout );
-
-		IndexBuffer ib{ indices };
-		va.SetIndexBuffer( ib );
+		auto object2 = std::make_unique<Renderable>( );
+		object2->SetTexture( Texture::GetTexture( "Assets/images/container.jpg" ) );
+		object2->SetTexture( Texture::GetTexture( "Assets/images/carrot.png" ) );
+		object2->SetVertexArray( VertexArray::GetVertexArray( "Rectangle" ) );
 
 		Shader shader{ "Assets/Shaders/vs.glsl", "Assets/Shaders/fs.glsl" };
-
-		Texture texture1{ "Assets/images/container.jpg" };
-		Texture texture2{ "Assets/images/awesomeface.png" };
-		texture1.Bind( 0 );
-		texture2.Bind( 1 );
-		shader.SetUniform1i( "texture1", 0 );
-		shader.SetUniform1i( "texture2", 1 );
 
 		while ( NOT glfwWindowShouldClose( window ) )
 		{
@@ -100,21 +81,32 @@ int main( )
 			GLCall( glClear( GL_COLOR_BUFFER_BIT ) );
 
 			shader.Bind( );
-			va.Bind( );
 
-			glm::mat4 mvp = glm::mat4{ 1.0f };
-			mvp = glm::translate( mvp, glm::vec3( 0.5f, 0.5f, 0.0f ) );
-			mvp = glm::rotate( mvp, glm::radians( static_cast< float >( glfwGetTime( ) ) * 30.0f ),
+			glm::mat4 wvp = glm::mat4{ 1.0f };
+			wvp = glm::translate( wvp, glm::vec3( 0.5f, 0.5f, 0.0f ) );
+			wvp = glm::rotate( wvp, glm::radians( static_cast< float >( glfwGetTime( ) ) * 30.0f ),
 							   glm::vec3( 0.0f, 0.0f, 1.0f ) );
-			mvp = glm::scale( mvp, glm::vec3( 0.5f, 0.5f, 0.5f ) );
-			shader.SetUniformMat4( "uMVP", mvp );
+			wvp = glm::scale( wvp, glm::vec3( 0.5f, 0.5f, 0.5f ) );
 
-			GLCall( glDrawElements( GL_TRIANGLES, va.GetNumIndices( ), GL_UNSIGNED_INT, nullptr ) );
+			object->SetWVPMatrix( wvp );
+			object->Draw( shader );
+
+			wvp = glm::mat4{ 1.0f };
+			wvp = glm::translate( wvp, glm::vec3( -0.5f, -0.5f, 0.0f ) );
+			wvp = glm::rotate( wvp, glm::radians( static_cast< float >( glfwGetTime( ) ) * 30.0f ),
+							   glm::vec3( 0.0f, 0.0f, 1.0f ) );
+			wvp = glm::scale( wvp, glm::vec3( 0.5f, 0.5f, 0.5f ) );
+
+			object2->SetWVPMatrix( wvp );
+			object2->Draw( shader );
 
 			glfwSwapBuffers( window );
 
 			glfwPollEvents( );
 		}
+
+		Texture::Clear( );
+		VertexArray::Clear( );
 	}
 
 	glfwTerminate( );
