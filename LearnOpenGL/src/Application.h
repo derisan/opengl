@@ -4,24 +4,23 @@
 #include <glfw/glfw3.h>
 #include <string_view>
 #include <memory>
-#include <functional>
 
-struct glfwDeleter
-{
-	void operator()( GLFWwindow* window )
-	{
-	}
-};
+#include <glm/glm.hpp>
 
-// 상속하지 말 것
-// v-ptr가 생긴다면 콜백이 수행되지 않는다
-// setCallbacks() 참조
-class Application final
+class Camera;
+
+class Application
 {
 public:
-	Application( std::string_view title, int width, int height, int glVersionMajor,
-				 int glVersionMinor);
+	static Application& Get( );
+
+	Application( ) = default;
 	~Application( );
+	Application( const Application& ) = delete;
+	Application& operator=( const Application& ) = delete;
+
+	void Init( std::string_view title, int width, int height, int glVersionMajor,
+			   int glVersionMinor );
 
 	void Run( );
 
@@ -29,15 +28,23 @@ public:
 	int GetScreenWidth( ) const;
 	int GetScreenHeight( ) const;
 
+	void Shutdown( );
+	void MoveCamera( int keycode );
+	void TurnCamera( const glm::vec3& direction );
+	void ZoomCamera( float offset );
+
 private:
 	void createWindowAndContext( std::string_view title, int width, int height, 
 					   int glVersionMajor, int glVersionMinor );
 	void initGLEW( );
 	void setCallbacks( );
+	void createCamera( );
 
 private:
-	std::unique_ptr<GLFWwindow, glfwDeleter> mWindow;
+	GLFWwindow* mWindow = { nullptr };
+	std::unique_ptr<Camera> mCamera;
 	int mScreenWidth = { 0 };
 	int mScreenHeight = { 0 };
+	float mDeltaTime = { 0.0f };
 };
 

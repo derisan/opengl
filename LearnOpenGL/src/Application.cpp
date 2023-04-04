@@ -4,22 +4,25 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <iostream>
+#include <algorithm>
 
 #include "Macros.h"
 #include "Shader.h"
 #include "VertexArray.h"
 #include "Texture.h"
 #include "Renderable.h"
+#include "Camera.h"
 
 
+void KeyCallback( GLFWwindow* window, int key, int scancode, int action, int mods );
+void MouseCallback( GLFWwindow* window, double x, double y );
+void MouseScrollCallback( GLFWwindow* window, double xOffset, double yOffset );
+void WindowSizeCallback( GLFWwindow* window, int w, int h );
 
-Application::Application( std::string_view title, int width, int height, int glVersionMajor, int glVersionMinor )
-	: mScreenWidth{ width }
-	, mScreenHeight{ height }
+Application& Application::Get( )
 {
-	createWindowAndContext( title, width, height, glVersionMajor, glVersionMinor );
-	setCallbacks( );
-	initGLEW( );
+	static Application app;
+	return app;
 }
 
 Application::~Application( )
@@ -27,6 +30,17 @@ Application::~Application( )
 	Texture::Clear( );
 	VertexArray::Clear( );
 	glfwTerminate( );
+}
+
+void Application::Init( std::string_view title, int width, int height, int glVersionMajor, int glVersionMinor )
+{
+	mScreenWidth = width;
+	mScreenHeight = height;
+
+	createWindowAndContext( title, width, height, glVersionMajor, glVersionMinor );
+	setCallbacks( );
+	initGLEW( );
+	createCamera( );
 }
 
 void Application::Run( )
@@ -60,12 +74,21 @@ void Application::Run( )
 
 	GLCall( glEnable( GL_DEPTH_TEST ) );
 
-	while ( NOT glfwWindowShouldClose( mWindow.get( ) ) )
+	float lastFrame = static_cast< float >( glfwGetTime( ) );
+	float currentFrame = lastFrame;
+
+	while ( NOT glfwWindowShouldClose( mWindow ) )
 	{
+		currentFrame = static_cast< float >( glfwGetTime( ) );
+		mDeltaTime = currentFrame - lastFrame;
+		lastFrame = currentFrame;
+
 		GLCall( glClearColor( 0.2f, 0.3f, 0.3f, 1.0f ) );
 		GLCall( glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT ) );
 
 		shader.Bind( );
+
+		mCamera->Bind( shader );
 
 		for ( auto i = 0; i < objects.size( ); i++ )
 		{
@@ -74,17 +97,11 @@ void Application::Run( )
 			glm::mat4 model = glm::mat4{ 1.0f };
 			model = glm::translate( model, cubePositions[ i ] );
 			model = glm::rotate( model, glm::radians( 20.0f * i ), glm::vec3( 1.0f, 0.3f, 0.5f ) );
-			glm::mat4 view = glm::mat4{ 1.0f };
-			view = glm::translate( view, glm::vec3( 0.0f, 0.0f, -10.0f ) );
-			glm::mat4 proj = glm::mat4{ 1.0f };
-			proj = glm::perspective( glm::radians( 45.0f ), mScreenWidth / static_cast< float >( mScreenHeight ),
-									 0.1f, 100.0f );
-
-			object->SetMVPMatrix( model, view, proj );
+			object->SetModelMatrix( model );
 			object->Draw( shader );
 		}
 
-		glfwSwapBuffers( mWindow.get( ) );
+		glfwSwapBuffers( mWindow );
 		glfwPollEvents( );
 	}
 }
@@ -106,6 +123,58 @@ int Application::GetScreenHeight( ) const
 	return mScreenHeight;
 }
 
+void Application::Shutdown( )
+{
+	glfwSetWindowShouldClose( mWindow, true );
+}
+
+void Application::MoveCamera( int keycode )
+{
+	const float cameraSpeed = 50.0f * mDeltaTime;
+
+	auto cameraPos = mCamera->GetCameraPos( );
+
+	switch ( keycode )
+	{
+		case GLFW_KEY_W:
+			cameraPos += mCamera->GetCameraFront( ) * cameraSpeed;
+			break;
+		case GLFW_KEY_S:
+			cameraPos -= mCamera->GetCameraFront( ) * cameraSpeed;
+			break;
+		case GLFW_KEY_A:
+			cameraPos -= glm::cross( mCamera->GetCameraFront( ), mCamera->GetCameraUp( ) )
+				* cameraSpeed;
+			break;
+		case GLFW_KEY_D:
+			cameraPos += glm::cross( mCamera->GetCameraFront( ), mCamera->GetCameraUp( ) )
+				* cameraSpeed;
+			break;
+		default:
+			ASSERT( false );
+			break;
+	}
+
+	mCamera->SetCameraPos( cameraPos );
+}
+
+void Application::TurnCamera( const glm::vec3& direction )
+{
+	mCamera->SetCameraFront( direction );
+}
+
+void Application::ZoomCamera( float offset )
+{
+	auto fov = mCamera->GetFOV( );
+
+	// Scroll Up -> offset = 1
+	// Scroll Down -> offset = -1
+	fov -= offset;
+
+	fov = std::clamp( fov, 1.0f, 60.0f );
+	mCamera->SetFOV( fov );
+}
+
 void Application::createWindowAndContext( std::string_view title, int width, int height, int glVersionMajor, int glVersionMinor )
 {
 	if ( NOT glfwInit( ) )
@@ -117,14 +186,17 @@ void Application::createWindowAndContext( std::string_view title, int width, int
 	glfwWindowHint( GLFW_CONTEXT_VERSION_MINOR, glVersionMinor );
 	glfwWindowHint( GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE );
 
-	mWindow = std::unique_ptr<GLFWwindow, glfwDeleter>{ glfwCreateWindow( width, height, title.data( ), nullptr, nullptr ) };
+	mWindow = glfwCreateWindow( width, height, title.data( ), nullptr, nullptr );
 
 	if ( NOT mWindow )
 	{
 		ASSERT( false );
 	}
 
-	glfwMakeContextCurrent( mWindow.get( ) );
+	// 마우스 가두기
+	glfwSetInputMode( mWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED );
+
+	glfwMakeContextCurrent( mWindow );
 }
 
 void Application::initGLEW( )
@@ -140,18 +212,93 @@ void Application::initGLEW( )
 
 void Application::setCallbacks( )
 {
-	glfwSetKeyCallback( mWindow.get( ), [ ]( GLFWwindow* window, int key, int scancode, int action, int mods )
-						{
-							if ( GLFW_KEY_ESCAPE == key && GLFW_PRESS == action )
-							{
-								glfwSetWindowShouldClose( window, true );
-							}
-						} );
+	glfwSetKeyCallback( mWindow, KeyCallback );
+	glfwSetCursorPosCallback( mWindow, MouseCallback );
+	glfwSetFramebufferSizeCallback( mWindow, WindowSizeCallback );
+	glfwSetScrollCallback( mWindow, MouseScrollCallback );
+}
 
-	glfwSetFramebufferSizeCallback( mWindow.get( ), [ ]( GLFWwindow* window, int w, int h )
-									{
-										auto app = reinterpret_cast< Application* >( window );
-										app->SetViewport( w, h );
-									} );
+void Application::createCamera( )
+{
+	mCamera = std::make_unique<Camera>( );
+	mCamera->SetViewMatrix( glm::vec3{ 0.0f, 0.0f, 10.0f },
+							glm::vec3{ 0.0f, 0.0f, -1.0f },
+							glm::vec3{ 0.0f, 1.0f, 0.0f } );
+	mCamera->SetPerspectiveMatrix( 45.0f,
+								   mScreenWidth / static_cast< float >( mScreenHeight ),
+								   0.1f, 100.0f );
+}
+
+void KeyCallback( GLFWwindow* window, int key, int scancode, int action, int mods )
+{
+	auto& app = Application::Get( );
+
+	if ( GLFW_KEY_ESCAPE == key && GLFW_PRESS == action )
+	{
+		app.Shutdown( );
+	}
+
+	if ( ( GLFW_KEY_W == key ||
+		   GLFW_KEY_S == key ||
+		   GLFW_KEY_A == key ||
+		   GLFW_KEY_D == key )
+		 && ( GLFW_PRESS == action ||
+			  GLFW_REPEAT == action ) )
+	{
+		app.MoveCamera( key );
+	}
+}
+
+
+void MouseCallback( GLFWwindow* window, double x, double y )
+{
+	static bool bFirstFocus = true;
+	static float lastX = Application::Get( ).GetScreenWidth( ) / 2.0f;
+	static float lastY = Application::Get( ).GetScreenHeight( ) / 2.0f;
+
+	if ( bFirstFocus )
+	{
+		lastX = static_cast< float >( x );
+		lastY = static_cast< float >( y );
+		bFirstFocus = false;
+	}
+
+	float xOffset = static_cast< float >( x - lastX );
+	float yOffset = static_cast< float >( lastY - y );
+
+	lastX = static_cast< float >( x );
+	lastY = static_cast< float >( y );
+
+	static float sensitivity = 0.1f;
+	xOffset *= sensitivity;
+	yOffset *= sensitivity;
+
+	static float yaw = -90.0f;
+	static float pitch = 0.0f;
+
+	yaw += xOffset;
+	pitch += yOffset;
+
+	pitch = std::clamp( pitch, -89.0f, 89.0f );
+
+	glm::vec3 direction = glm::vec3{ 0.0f };
+	direction.x = cos( glm::radians( yaw ) ) * cos( glm::radians( pitch ) );
+	direction.y = sin( glm::radians( pitch ) );
+	direction.z = sin( glm::radians( yaw ) ) * cos( glm::radians( pitch ) );
+
+	Application::Get( ).TurnCamera( direction );
+}
+
+
+void MouseScrollCallback( GLFWwindow* window, double xOffset, double yOffset )
+{
+	Application::Get( ).ZoomCamera( static_cast< float >( yOffset ) );
+}
+
+
+void WindowSizeCallback( GLFWwindow* window, int w, int h )
+{
+	auto& app = Application::Get( );
+	app.SetViewport( w, h );
 }
 

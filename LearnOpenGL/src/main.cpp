@@ -2,8 +2,8 @@
 
 int main( )
 {
-	auto app = std::make_unique<Application>( "LearnOpenGL", 800, 600, 4, 6 );
-	app->Run( );
-
+	auto& app = Application::Get( );
+	app.Init( "LearnOpenGL", 800, 600, 4, 6 );
+	app.Run( );
 	return 0;
 }
