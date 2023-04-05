@@ -12,6 +12,7 @@
 #include "Texture.h"
 #include "Renderable.h"
 #include "Camera.h"
+#include "Cube.h"
 
 
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
@@ -45,32 +46,20 @@ void Application::Init(std::string_view title, int width, int height, int glVers
 
 void Application::Run()
 {
-	std::vector<std::unique_ptr<Renderable>> objects;
-	objects.reserve(10);
+	auto cube = std::make_unique<Cube>();
+	cube->SetVertexArray(VertexArray::GetVertexArray("Cube"));
+	cube->SetColor(glm::vec3{ 1.0f, 0.5f, 0.31f });
 
-	for (auto i = 0; i < 10; ++i)
-	{
-		auto object = std::make_unique<Renderable>();
-		object->SetTexture(Texture::GetTexture("Assets/images/container.jpg"));
-		object->SetTexture(Texture::GetTexture("Assets/images/awesomeface.png"));
-		object->SetVertexArray(VertexArray::GetVertexArray("Cube"));
-		objects.push_back(std::move(object));
-	}
+	auto lightCube = std::make_unique<LightCube>();
+	lightCube->SetVertexArray(VertexArray::GetVertexArray("Cube"));
 
-	glm::vec3 cubePositions[] = {
-		glm::vec3(0.0f,  0.0f,  0.0f),
-		glm::vec3(2.0f,  5.0f, -15.0f),
-		glm::vec3(-1.5f, -2.2f, -2.5f),
-		glm::vec3(-3.8f, -2.0f, -12.3f),
-		glm::vec3(2.4f, -0.4f, -3.5f),
-		glm::vec3(-1.7f,  3.0f, -7.5f),
-		glm::vec3(1.3f, -2.0f, -2.5f),
-		glm::vec3(1.5f,  2.0f, -2.5f),
-		glm::vec3(1.5f,  0.2f, -1.5f),
-		glm::vec3(-1.3f,  1.0f, -1.5f)
-	};
+	glm::mat4 model{ 1.0f };
+	model = glm::translate(model, glm::vec3{ 1.2f, 1.0f, 2.0f });
+	model = glm::scale(model, glm::vec3{ 0.2f });
+	lightCube->SetModelMatrix(model);
 
-	Shader shader{ "Assets/Shaders/vs.glsl", "Assets/Shaders/fs.glsl" };
+	Shader defaultShader{ "Assets/Shaders/DefaultVS.glsl", "Assets/Shaders/DefaultFS.glsl" };
+	Shader lightCubeShader{ "Assets/Shaders/DefaultVS.glsl", "Assets/Shaders/LightCubeFS.glsl" };
 
 	GLCall(glEnable(GL_DEPTH_TEST));
 
@@ -83,23 +72,17 @@ void Application::Run()
 		mDeltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 
-		GLCall(glClearColor(0.2f, 0.3f, 0.3f, 1.0f));
+		GLCall(glClearColor(0.0f, 0.0f, 0.0f, 1.0f));
 		GLCall(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
-		shader.Bind();
+		defaultShader.Bind();
+		defaultShader.SetUniform3f("uLightColor", glm::vec3{ 1.0f });
+		mCamera->Bind(defaultShader);
+		cube->Draw(defaultShader);
 
-		mCamera->Bind(shader);
-
-		for (auto i = 0; i < objects.size(); i++)
-		{
-			auto& object = objects[i];
-
-			glm::mat4 model = glm::mat4{ 1.0f };
-			model = glm::translate(model, cubePositions[i]);
-			model = glm::rotate(model, glm::radians(20.0f * i), glm::vec3(1.0f, 0.3f, 0.5f));
-			object->SetModelMatrix(model);
-			object->Draw(shader);
-		}
+		lightCubeShader.Bind();
+		mCamera->Bind(lightCubeShader);
+		lightCube->Draw(lightCubeShader);
 
 		glfwSwapBuffers(mWindow);
 		glfwPollEvents();
@@ -221,7 +204,7 @@ void Application::setCallbacks()
 void Application::createCamera()
 {
 	mCamera = std::make_unique<Camera>();
-	mCamera->SetViewMatrix(glm::vec3{ 0.0f, 0.0f, 10.0f },
+	mCamera->SetViewMatrix(glm::vec3{ 0.0f, 0.0f, 5.0f },
 		glm::vec3{ 0.0f, 0.0f, -1.0f },
 		glm::vec3{ 0.0f, 1.0f, 0.0f });
 	mCamera->SetPerspectiveMatrix(45.0f,
