@@ -1,35 +1,41 @@
 #pragma once
 
-#include "GLObject.h"
-
 #include <string_view>
 #include <unordered_map>
 #include <memory>
+#include "GLObject.h"
 
-class Texture:
-    public GLObject
+
+class Texture :
+	public GLObject
 {
+	using TextureMap = std::unordered_map<std::string, std::shared_ptr<Texture>>;
+
 public:
-    static std::shared_ptr<Texture> GetTexture( std::string_view fileName );
-    static void Clear( );
-
-	Texture( std::string_view fileName );
-	~Texture( );
-
-	void Bind( unsigned int slot ) const;
-	virtual void Unbind( ) const override;
-	int GetWidth( ) const;
-	int GetHeight( ) const;
+	static std::shared_ptr<Texture> GetTexture(std::string_view fileName);
+	static void Clear();
 
 private:
-    virtual void Bind( ) const override;
+	inline static TextureMap sTextures;
 
-    void loadTexture( std::string_view fileName );
+public:
+	Texture() = default;
+	Texture(std::string_view fileName);
+	~Texture();
+
+	void LoadTexture(std::string_view fileName);
+	void Bind(unsigned int slot) const;
+	virtual void Unbind() const override;
+
+	int GetWidth() const;
+	int GetHeight() const;
 
 private:
-    inline static std::unordered_map<std::string, std::shared_ptr<Texture>> sTextures;
+	virtual void Bind() const override;
 
-    int mWidth = { 0 };
-    int mHeight = { 0 };
+private:
+	int mWidth = 0;
+	int mHeight = 0;
 };
 
+static std::string GetFileExtension(std::string_view fileName);

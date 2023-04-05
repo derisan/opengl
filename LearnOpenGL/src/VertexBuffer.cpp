@@ -1,38 +1,35 @@
 #include "VertexBuffer.h"
-
 #include "Macros.h"
 
-const unsigned int kVertexBufferType = GL_ARRAY_BUFFER;
-
-VertexBuffer::VertexBuffer( const void* vertices, int bytes )
+VertexBuffer::VertexBuffer(const float *vertices, int bytes)
 {
-	createBuffer( bytes, static_cast< const float* >( vertices ) );
+	createBuffer(vertices, bytes);
 }
 
-VertexBuffer::VertexBuffer( const std::vector<float>& vertices )
+VertexBuffer::VertexBuffer(const std::vector<float>& vertices)
 {
-	int bytes = static_cast< int >( sizeof( float ) * vertices.size( ) );
-	createBuffer( bytes, vertices.data( ) );
+	int bytes = static_cast<int>(sizeof(float) * vertices.size());
+	createBuffer(vertices.data(), bytes);
 }
 
-VertexBuffer::~VertexBuffer( )
+VertexBuffer::~VertexBuffer()
 {
-	GLCall( glDeleteBuffers( 1, &ObjectID ) );
+	GLCall(glDeleteBuffers(1, &ObjectID));
 }
 
-void VertexBuffer::Bind( ) const
+void VertexBuffer::Bind() const
 {
-	GLCall( glBindBuffer( kVertexBufferType, ObjectID ) );
+	GLCall(glBindBuffer(kVertexBufferType, ObjectID));
 }
 
-void VertexBuffer::Unbind( ) const
+void VertexBuffer::Unbind() const
 {
-	GLCall( glBindBuffer( kVertexBufferType, 0 ) );
+	GLCall(glBindBuffer(kVertexBufferType, 0));
 }
 
-void VertexBuffer::createBuffer( int bytes, const float* data )
+void VertexBuffer::createBuffer(const float* data, int bytes)
 {
-	GLCall( glGenBuffers( 1, &ObjectID ) );
-	Bind( );
-	GLCall( glBufferData( kVertexBufferType, bytes, data, GL_STATIC_DRAW ) );
+	GLCall(glGenBuffers(1, &ObjectID));
+	Bind();
+	GLCall(glBufferData(kVertexBufferType, bytes, data, GL_STATIC_DRAW));
 }

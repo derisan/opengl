@@ -1,10 +1,9 @@
 #include "Shader.h"
-
-#include "Macros.h"
-
 #include <glm/gtc/type_ptr.hpp>
 #include <fstream>
 #include <sstream>
+#include "Macros.h"
+
 
 Shader::Shader( std::string_view vsFilePath, std::string_view fsFilePath )
 {
@@ -60,7 +59,7 @@ void Shader::SetUniform1i( std::string_view uniformName, int x ) const
 	GLCall( glUniform1i( location, x ) );
 }
 
-std::string Shader::parseShader( std::string_view filePath )
+std::string Shader::parseShader( std::string_view filePath ) const
 {
 	std::ifstream file{ filePath.data( ) };
 	ASSERT( file.is_open( ) );
@@ -71,18 +70,18 @@ std::string Shader::parseShader( std::string_view filePath )
 	return ss.str( );
 }
 
-unsigned int Shader::createShader( std::string_view source, unsigned int shaderType )
+unsigned int Shader::createShader( std::string_view source, unsigned int shaderType ) const
 {
 	GLCall( auto id = glCreateShader( shaderType ) );
 	auto src = source.data( );
 	GLCall( glShaderSource( id, 1, &src, nullptr ) );
 	GLCall( glCompileShader( id ) );
 
-	int result = { 0 };
+	int result = 0;
 	GLCall( glGetShaderiv( id, GL_COMPILE_STATUS, &result ) );
 	if ( GL_FALSE == result )
 	{
-		int length = { 0 };
+		int length = 0;
 		GLCall( glGetShaderiv( id, GL_INFO_LOG_LENGTH, &length ) );
 		char* message = reinterpret_cast< char* >( _malloca( length ) );
 		GLCall( glGetShaderInfoLog( id, length, &length, message ) );
@@ -98,9 +97,9 @@ unsigned int Shader::createShader( std::string_view source, unsigned int shaderT
 
 int Shader::getUniformLocation( std::string_view uniformName ) const
 {
-	auto iter = mUniformsMap.find( uniformName.data( ) );
+	auto iter = mUniformMap.find( uniformName.data( ) );
 
-	if ( iter != mUniformsMap.end( ) )
+	if ( iter != mUniformMap.end( ) )
 	{
 		return iter->second;
 	}
@@ -108,7 +107,7 @@ int Shader::getUniformLocation( std::string_view uniformName ) const
 	{
 		int location = glGetUniformLocation( ObjectID, uniformName.data( ) );
 		ASSERT( location != -1 );
-		mUniformsMap.emplace( uniformName, location );
+		mUniformMap.emplace( uniformName, location );
 		return location;
 	}
 }

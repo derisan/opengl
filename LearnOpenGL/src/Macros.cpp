@@ -1,17 +1,16 @@
 #include "Macros.h"
 
 
-
-void GLClearError( )
+void GLClearError()
 {
-	while ( glGetError( ) != GL_NO_ERROR );
+	while (glGetError() != GL_NO_ERROR);
 }
 
-bool GLLogError( std::string_view functionName, std::string_view fileName, int lineNumber )
+bool GLLogError(std::string_view functionName, std::string_view fileName, int lineNumber)
 {
-	unsigned int error = glGetError( );
+	unsigned int error = glGetError();
 
-	if ( GL_NO_ERROR != error )
+	if (GL_NO_ERROR != error)
 	{
 		std::cout << "[Error Code] " << error << ": " << functionName << " "
 			<< fileName << "(" << lineNumber << ")" << std::endl;

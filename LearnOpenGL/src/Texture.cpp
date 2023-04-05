@@ -1,108 +1,101 @@
 #include "Texture.h"
-
 #include <glew/glew.h>
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb/stb_image.h>
-#include <filesystem>
-
 #include "Macros.h"
 
-std::string GetFileExtension( std::string_view fileName );
-
-std::shared_ptr<Texture> Texture::GetTexture( std::string_view fileName )
+Texture::Texture(std::string_view fileName)
 {
-	const std::string file = { fileName.data( ) };
-
-	auto iter = sTextures.find( file );
-
-	if ( iter != sTextures.end( ) )
-	{
-		return iter->second;
-	}
-
-	auto newTexture = std::make_shared<Texture>( file );
-	sTextures.emplace( file, newTexture );
-	return newTexture;
+	LoadTexture(fileName);
 }
 
-void Texture::Clear( )
+Texture::~Texture()
 {
-	sTextures.clear( );
+	GLCall(glDeleteTextures(1, &ObjectID));
 }
 
-Texture::Texture( std::string_view fileName )
+void Texture::Bind() const
 {
-	loadTexture( fileName );
+	GLCall(glBindTexture(GL_TEXTURE_2D, ObjectID));
 }
 
-Texture::~Texture( )
+void Texture::Bind(unsigned int slot) const
 {
-	GLCall( glDeleteTextures( 1, &ObjectID ) );
+	glActiveTexture(GL_TEXTURE0 + slot);
+	Bind();
 }
 
-void Texture::Bind( ) const
+void Texture::Unbind() const
 {
-	GLCall( glBindTexture( GL_TEXTURE_2D, ObjectID ) );
+	GLCall(glBindTexture(GL_TEXTURE_2D, 0));
 }
 
-void Texture::Bind( unsigned int slot ) const
-{
-	glActiveTexture( GL_TEXTURE0 + slot );
-	Bind( );
-}
-
-void Texture::Unbind( ) const
-{
-	GLCall( glBindTexture( GL_TEXTURE_2D, 0 ) );
-}
-
-int Texture::GetWidth( ) const
+int Texture::GetWidth() const
 {
 	return mWidth;
 }
 
-int Texture::GetHeight( ) const
+int Texture::GetHeight() const
 {
 	return mHeight;
 }
 
-void Texture::loadTexture( std::string_view fileName )
+void Texture::LoadTexture(std::string_view fileName)
 {
-	GLCall( glGenTextures( 1, &ObjectID ) );
-	GLCall( glBindTexture( GL_TEXTURE_2D, ObjectID ) );
+	GLCall(glGenTextures(1, &ObjectID));
+	GLCall(glBindTexture(GL_TEXTURE_2D, ObjectID));
 
-	GLCall( glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT ) );
-	GLCall( glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT ) );
-	GLCall( glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR ) );
-	GLCall( glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR ) );
+	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT));
+	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT));
+	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR));
+	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
 
-	stbi_set_flip_vertically_on_load( true );
+	stbi_set_flip_vertically_on_load(true);
 	int channels = { 0 };
-	auto textureData = stbi_load( fileName.data( ), &mWidth, &mHeight, &channels, 0 );
-	auto extension = GetFileExtension( fileName );
-	ASSERT( extension == "jpg" || extension == "png" );
+	auto textureData = stbi_load(fileName.data(), &mWidth, &mHeight, &channels, 0);
+	auto extension = GetFileExtension(fileName);
+	ASSERT(extension == "jpg" || extension == "png");
 	int format = extension == "jpg" ? GL_RGB : GL_RGBA;
 
-	if ( textureData )
+	if (textureData)
 	{
-		GLCall( glTexImage2D( GL_TEXTURE_2D, 0, format, mWidth, mHeight,
-				0, format, GL_UNSIGNED_BYTE, textureData ) );
-		GLCall( glGenerateMipmap( GL_TEXTURE_2D ) );
-		stbi_image_free( textureData );
+		GLCall(glTexImage2D(GL_TEXTURE_2D, 0, format, mWidth, mHeight,
+			0, format, GL_UNSIGNED_BYTE, textureData));
+		GLCall(glGenerateMipmap(GL_TEXTURE_2D));
+		stbi_image_free(textureData);
 	}
 	else
 	{
-		ASSERT( false );
+		ASSERT(false);
 	}
 }
 
-std::string GetFileExtension( std::string_view fileName )
+std::string GetFileExtension(std::string_view fileName)
 {
-	auto startIdx = fileName.rfind( "." );
-	if ( startIdx == std::string_view::npos )
+	auto startIdx = fileName.rfind(".");
+	if (startIdx == std::string_view::npos)
 	{
-		ASSERT( false );
+		ASSERT(false);
 	}
 
-	return std::string{ fileName.substr( startIdx + 1 ).data( ) };
+	return std::string{ fileName.substr(startIdx + 1).data() };
+}
+
+std::shared_ptr<Texture> Texture::GetTexture(std::string_view fileName)
+{
+	auto iter = sTextures.find(fileName.data());
+
+	if (iter != sTextures.end())
+	{
+		return iter->second;
+	}
+
+	auto newTexture = std::make_shared<Texture>(fileName);
+	sTextures.emplace(fileName, newTexture);
+	return newTexture;
+}
+
+void Texture::Clear()
+{
+	sTextures.clear();
 }

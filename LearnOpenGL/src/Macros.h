@@ -5,12 +5,13 @@
 #include <string_view>
 #include <iostream>
 
+
 #define NOT !
 #define ASSERT(x) if(!(x)) { __debugbreak(); }
 
-void GLClearError( );
+void GLClearError();
 
-bool GLLogError( std::string_view functionName, std::string_view fileName, int lineNumber );
+bool GLLogError(std::string_view functionName, std::string_view fileName, int lineNumber);
 
 #ifdef _DEBUG
 #define GLCall(x) GLClearError();\
