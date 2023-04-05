@@ -49,14 +49,14 @@ void Application::Run()
 	auto cube = std::make_unique<Cube>();
 	cube->SetVertexArray(VertexArray::GetVertexArray("Cube"));
 	cube->SetColor(glm::vec3{ 1.0f, 0.5f, 0.31f });
+	cube->SetScale(glm::vec3{ 1.0f, 2.0f, 1.0f });
+	float cubeYRotation = 0.0f;
 
 	auto lightCube = std::make_unique<LightCube>();
 	lightCube->SetVertexArray(VertexArray::GetVertexArray("Cube"));
-
-	glm::mat4 model{ 1.0f };
-	model = glm::translate(model, glm::vec3{ 1.2f, 1.0f, 2.0f });
-	model = glm::scale(model, glm::vec3{ 0.2f });
-	lightCube->SetModelMatrix(model);
+	glm::vec3 lightCubePos{ 1.2f, 1.0f, 2.0f };
+	lightCube->SetPosition(lightCubePos);
+	lightCube->SetScale(glm::vec3{ 0.2f });
 
 	Shader defaultShader{ "Assets/Shaders/DefaultVS.glsl", "Assets/Shaders/DefaultFS.glsl" };
 	Shader lightCubeShader{ "Assets/Shaders/DefaultVS.glsl", "Assets/Shaders/LightCubeFS.glsl" };
@@ -75,8 +75,19 @@ void Application::Run()
 		GLCall(glClearColor(0.0f, 0.0f, 0.0f, 1.0f));
 		GLCall(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
+		// Rotate 
+		lightCubePos.x = cos(static_cast<float>(glfwGetTime())) * 2.0f;
+		lightCubePos.z = sin(static_cast<float>(glfwGetTime())) * 2.0f;
+		lightCube->SetPosition(lightCubePos);
+		cubeYRotation += 30.0f * mDeltaTime;
+		cube->SetRotation(glm::vec3{ 0.0f, cubeYRotation, 0.0f });
+
 		defaultShader.Bind();
 		defaultShader.SetUniform3f("uLightColor", glm::vec3{ 1.0f });
+		defaultShader.SetUniform3f("uLightPosition", lightCubePos);
+		defaultShader.SetUniform3f("uViewerPosition", mCamera->GetCameraPos());
+		defaultShader.SetUniform1f("uAmbientStrength", 0.1f);
+		defaultShader.SetUniform1f("uSpecularStrength", 0.5f);
 		mCamera->Bind(defaultShader);
 		cube->Draw(defaultShader);
 
@@ -132,6 +143,12 @@ void Application::MoveCamera(int keycode)
 	case GLFW_KEY_D:
 		cameraPos += glm::cross(mCamera->GetCameraFront(), mCamera->GetCameraUp())
 			* cameraSpeed;
+		break;
+	case GLFW_KEY_Q:
+		cameraPos += mCamera->GetCameraUp() * cameraSpeed;
+		break;
+	case GLFW_KEY_E:
+		cameraPos -= mCamera->GetCameraUp() * cameraSpeed;
 		break;
 	default:
 		ASSERT(false);
@@ -224,7 +241,9 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 	if ((GLFW_KEY_W == key ||
 		GLFW_KEY_S == key ||
 		GLFW_KEY_A == key ||
-		GLFW_KEY_D == key)
+		GLFW_KEY_D == key || 
+		GLFW_KEY_Q == key ||
+		GLFW_KEY_E == key)
 		&& (GLFW_PRESS == action ||
 			GLFW_REPEAT == action))
 	{

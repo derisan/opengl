@@ -1,5 +1,6 @@
 #include "Renderable.h"
 #include <string>
+#include <glm/gtc/matrix_transform.hpp>
 #include "VertexArray.h"
 #include "Texture.h"
 #include "Shader.h"
@@ -18,11 +19,30 @@ void Renderable::SetTexture(const std::shared_ptr<Texture>& texture)
 void Renderable::SetModelMatrix(const glm::mat4& mat)
 {
 	mModel = mat;
+	updateITModelMatrix();
 }
 
 void Renderable::SetColor(const glm::vec3& color)
 {
 	mColor = color;
+}
+
+void Renderable::SetPosition(const glm::vec3& position)
+{
+	mPosition = position;
+	updateModelMatrix();
+}
+
+void Renderable::SetRotation(const glm::vec3& rotation)
+{
+	mRotation = rotation;
+	updateModelMatrix();
+}
+
+void Renderable::SetScale(const glm::vec3& scale)
+{
+	mScale = scale;
+	updateModelMatrix();
 }
 
 void Renderable::Draw(const Shader& shader) const
@@ -37,6 +57,21 @@ glm::vec3 Renderable::GetColor() const
 	return mColor;
 }
 
+glm::vec3 Renderable::GetPosition() const
+{
+	return mPosition;
+}
+
+glm::vec3 Renderable::GetRotation() const
+{
+	return mRotation;
+}
+
+glm::vec3 Renderable::GetScale() const
+{
+	return mScale;
+}
+
 void Renderable::setUniforms(const Shader& shader) const
 {
 	for (auto i = 0; i < mTextures.size(); i++)
@@ -45,6 +80,23 @@ void Renderable::setUniforms(const Shader& shader) const
 		shader.SetUniform1i(GetTextureUniformName(i), i);
 	}
 	shader.SetUniformMat4("uModel", mModel);
+	shader.SetUniformMat4("uITModel", mInversedTransposedModel);
+}
+
+void Renderable::updateModelMatrix()
+{
+	mModel = glm::mat4{ 1.0f };
+	mModel = glm::translate(mModel, mPosition);
+	mModel = glm::rotate(mModel, glm::radians(mRotation.x), glm::vec3{ 1.0f, 0.0f, 0.0f });
+	mModel = glm::rotate(mModel, glm::radians(mRotation.y), glm::vec3{ 0.0f, 1.0f, 0.0f });
+	mModel = glm::rotate(mModel, glm::radians(mRotation.z), glm::vec3{ 0.0f, 0.0f, 1.0f });
+	mModel = glm::scale(mModel, mScale);
+	updateITModelMatrix();
+}
+
+void Renderable::updateITModelMatrix()
+{
+	mInversedTransposedModel = glm::transpose(glm::inverse(mModel));
 }
 
 std::string GetTextureUniformName(int slot)

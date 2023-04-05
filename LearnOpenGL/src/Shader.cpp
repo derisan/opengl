@@ -41,6 +41,10 @@ void Shader::Unbind() const
 void Shader::SetUniform4f(std::string_view uniformName, float x, float y, float z, float w) const
 {
 	auto location = getUniformLocation(uniformName);
+	if (-1 == location)
+	{
+		return;
+	}
 	Bind();
 	GLCall(glUniform4f(location, x, y, z, w));
 }
@@ -48,6 +52,10 @@ void Shader::SetUniform4f(std::string_view uniformName, float x, float y, float 
 void Shader::SetUniformMat4(std::string_view uniformName, const glm::mat4& mat) const
 {
 	auto location = getUniformLocation(uniformName);
+	if (-1 == location)
+	{
+		return;
+	}
 	Bind();
 	GLCall(glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(mat)));
 }
@@ -55,13 +63,32 @@ void Shader::SetUniformMat4(std::string_view uniformName, const glm::mat4& mat) 
 void Shader::SetUniform1i(std::string_view uniformName, int x) const
 {
 	auto location = getUniformLocation(uniformName);
+	if (-1 == location)
+	{
+		return;
+	}
 	Bind();
 	GLCall(glUniform1i(location, x));
+}
+
+void Shader::SetUniform1f(std::string_view uniformName, float x) const
+{
+	auto location = getUniformLocation(uniformName);
+	if (-1 == location)
+	{
+		return;
+	}
+	Bind();
+	GLCall(glUniform1f(location, x));
 }
 
 void Shader::SetUniform3f(std::string_view uniformName, float x, float y, float z) const
 {
 	auto location = getUniformLocation(uniformName);
+	if (-1 == location)
+	{
+		return;
+	}
 	Bind();
 	GLCall(glUniform3f(location, x, y, z));
 }
@@ -118,8 +145,10 @@ int Shader::getUniformLocation(std::string_view uniformName) const
 	else
 	{
 		int location = glGetUniformLocation(ObjectID, uniformName.data());
-		ASSERT(-1 != location);
-		mUniformMap.emplace(uniformName, location);
+		if (-1 != location)
+		{
+			mUniformMap.emplace(uniformName, location);
+		}
 		return location;
 	}
 }

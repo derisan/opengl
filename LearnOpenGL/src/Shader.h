@@ -22,6 +22,7 @@ public:
 	void SetUniform4f(std::string_view uniformName, float x, float y, float z, float w) const;
 	void SetUniformMat4(std::string_view uniformName, const glm::mat4& mat) const;
 	void SetUniform1i(std::string_view uniformName, int x) const;
+	void SetUniform1f(std::string_view uniformName, float x) const;
 	void SetUniform3f(std::string_view uniformName, float x, float y, float z) const;
 	void SetUniform3f(std::string_view uniformName, const glm::vec3& vec) const;
 
