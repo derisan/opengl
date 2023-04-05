@@ -22,11 +22,6 @@ void Renderable::SetModelMatrix(const glm::mat4& mat)
 	updateITModelMatrix();
 }
 
-void Renderable::SetColor(const glm::vec3& color)
-{
-	mColor = color;
-}
-
 void Renderable::SetPosition(const glm::vec3& position)
 {
 	mPosition = position;
@@ -45,16 +40,31 @@ void Renderable::SetScale(const glm::vec3& scale)
 	updateModelMatrix();
 }
 
+void Renderable::SetAmbient(const glm::vec3& ambient)
+{
+	mAmbient = ambient;
+}
+
+void Renderable::SetDiffuse(const glm::vec3& diffuse)
+{
+	mDiffuse = diffuse;
+}
+
+void Renderable::SetSpecular(const glm::vec3& specular)
+{
+	mSpecular = specular;
+}
+
+void Renderable::SetShininess(float shininess)
+{
+	mShininess = shininess;
+}
+
 void Renderable::Draw(const Shader& shader) const
 {
 	mVertexArray->Bind();
 	setUniforms(shader);
 	glDrawElements(GL_TRIANGLES, mVertexArray->GetNumIndices(), GL_UNSIGNED_INT, nullptr);
-}
-
-glm::vec3 Renderable::GetColor() const
-{
-	return mColor;
 }
 
 glm::vec3 Renderable::GetPosition() const
@@ -70,6 +80,26 @@ glm::vec3 Renderable::GetRotation() const
 glm::vec3 Renderable::GetScale() const
 {
 	return mScale;
+}
+
+glm::vec3 Renderable::GetAmbient() const
+{
+	return mAmbient;
+}
+
+glm::vec3 Renderable::GetDiffuse() const
+{
+	return mDiffuse;
+}
+
+glm::vec3 Renderable::GetSpecular() const
+{
+	return mSpecular;
+}
+
+float Renderable::GetShininess() const
+{
+	return mShininess;
 }
 
 void Renderable::setUniforms(const Shader& shader) const

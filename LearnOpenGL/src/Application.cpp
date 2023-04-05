@@ -48,8 +48,11 @@ void Application::Run()
 {
 	auto cube = std::make_unique<Cube>();
 	cube->SetVertexArray(VertexArray::GetVertexArray("Cube"));
-	cube->SetColor(glm::vec3{ 1.0f, 0.5f, 0.31f });
 	cube->SetScale(glm::vec3{ 1.0f, 2.0f, 1.0f });
+	cube->SetAmbient(glm::vec3{ 1.0f, 0.5f, 0.31f });
+	cube->SetDiffuse(glm::vec3{ 1.0f, 0.5f, 0.31f });
+	cube->SetSpecular(glm::vec3{ 0.5f });
+	cube->SetShininess(32.0f);
 	float cubeYRotation = 0.0f;
 
 	auto lightCube = std::make_unique<LightCube>();
@@ -83,11 +86,20 @@ void Application::Run()
 		cube->SetRotation(glm::vec3{ 0.0f, cubeYRotation, 0.0f });
 
 		defaultShader.Bind();
-		defaultShader.SetUniform3f("uLightColor", glm::vec3{ 1.0f });
-		defaultShader.SetUniform3f("uLightPosition", lightCubePos);
+		defaultShader.SetUniform3f("uLight.Position", lightCubePos);
+
+		glm::vec3 lightColor{ 0.0f };
+		lightColor.x = sin(static_cast<float>(glfwGetTime()) * 2.0f);
+		lightColor.y = sin(static_cast<float>(glfwGetTime()) * 0.7f);
+		lightColor.z = sin(static_cast<float>(glfwGetTime()) * 1.3f);
+
+		auto diffuseLightColor = lightColor * 0.5f;
+		auto ambientLightColor = lightColor * 0.1f;
+
+		defaultShader.SetUniform3f("uLight.Ambient", ambientLightColor);
+		defaultShader.SetUniform3f("uLight.Diffuse", diffuseLightColor);
+		defaultShader.SetUniform3f("uLight.Specular", glm::vec3{ 1.0f });
 		defaultShader.SetUniform3f("uViewerPosition", mCamera->GetCameraPos());
-		defaultShader.SetUniform1f("uAmbientStrength", 0.1f);
-		defaultShader.SetUniform1f("uSpecularStrength", 0.5f);
 		mCamera->Bind(defaultShader);
 		cube->Draw(defaultShader);
 
