@@ -137,6 +137,8 @@ std::string GetTextureUniformName(int slot)
 		return "uMaterial.DiffuseMap";
 	case 1:
 		return "uMaterial.SpecularMap";
+	case 2:
+		return "uMaterial.EmissiveMap";
 	default:
 		ASSERT(false);
 		return "";

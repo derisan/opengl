@@ -5,6 +5,7 @@ struct Material
 {
 	sampler2D DiffuseMap;
 	sampler2D SpecularMap;
+	sampler2D EmissiveMap;
 	float Shininess;
 };
 
@@ -31,6 +32,9 @@ uniform Light    uLight;
 
 void main()
 {
+	// Emmisive
+	vec3 emmisive = vec3(texture(uMaterial.EmissiveMap, texCoord));
+
 	// Ambient
 	vec3 ambient = uLight.Ambient * vec3(texture(uMaterial.DiffuseMap, texCoord));
 
@@ -49,6 +53,6 @@ void main()
 	vec3 specular = uLight.Specular * specularStrength 
 					* vec3(texture(uMaterial.SpecularMap, texCoord));
 
-	vec3 result = ambient + diffuse + specular;
+	vec3 result = emmisive + ambient + diffuse + specular;
 	fragColor = vec4(result, 1.0f);
 }

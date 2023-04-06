@@ -50,6 +50,7 @@ void Application::Run()
 	cube->SetVertexArray(VertexArray::GetVertexArray("Cube"));
 	cube->SetTexture(Texture::GetTexture("Assets/Images/container2.png"));
 	cube->SetTexture(Texture::GetTexture("Assets/Images/container2_specular.png"));
+	cube->SetTexture(Texture::GetTexture("Assets/Images/container2_emissive.png"));
 	cube->SetScale(glm::vec3{ 1.0f, 2.0f, 1.0f });
 	cube->SetShininess(32.0f);
 	float cubeYRotation = 0.0f;
