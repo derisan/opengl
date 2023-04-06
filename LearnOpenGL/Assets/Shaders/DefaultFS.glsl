@@ -1,5 +1,7 @@
 #version 460 core
 
+#define NUM_POINT_LIGHTS 4
+
 // struct
 struct Material
 {
@@ -9,12 +11,35 @@ struct Material
 	float Shininess;
 };
 
-struct Light
+struct DirLight
+{
+	vec3 Direction;
+	vec3 Ambient;
+	vec3 Diffuse;
+	vec3 Specular;
+};
+
+struct PointLight
 {
 	vec3 Position;
 	vec3 Ambient;
 	vec3 Diffuse;
 	vec3 Specular;
+	float Linear;
+	float Quadratic;
+};
+
+struct SpotLight
+{
+	vec3 Position;
+	vec3 Direction;
+	float Cutoff;
+	float OuterCutoff;
+	vec3 Ambient;
+	vec3 Diffuse;
+	vec3 Specular;
+	float Linear;
+	float Quadratic;
 };
 
 // in
@@ -28,31 +53,89 @@ out vec4 fragColor;
 // uniform
 uniform vec3	 uViewerPosition;
 uniform Material uMaterial;
-uniform Light    uLight;
+uniform DirLight uDirLight;
+uniform PointLight uPointLights[NUM_POINT_LIGHTS];
+uniform SpotLight uSpotLight;
+
+// Functions
+vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir);
+vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir);
+vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir);
 
 void main()
 {
-	// Emmisive
-	vec3 emmisive = vec3(texture(uMaterial.EmissiveMap, texCoord));
+	vec3 norm = normalize(normal);	
+	vec3 viewDir = normalize(uViewerPosition - fragPosition);
 
-	// Ambient
-	vec3 ambient = uLight.Ambient * vec3(texture(uMaterial.DiffuseMap, texCoord));
+	vec3 result = CalcDirLight(uDirLight, norm, viewDir);
 
-	// Diffuse
-	vec3 lightDirection = normalize(uLight.Position - fragPosition);
-	vec3 fragNormal = normalize(normal);
-	float diffuseStrength = max(dot(lightDirection, fragNormal), 0.0f);
-	vec3 diffuse = uLight.Diffuse * diffuseStrength 
-					* vec3(texture(uMaterial.DiffuseMap, texCoord));
+	for(int i = 0; i < NUM_POINT_LIGHTS; i++)
+	{
+		result += CalcPointLight(uPointLights[i], norm, fragPosition, viewDir);
+	}
 
-	// Specular
-	vec3 viewDirection = normalize(uViewerPosition - fragPosition);
-	vec3 reflectDirection = reflect(-lightDirection, fragNormal);
-	float specularStrength = pow(max(dot(viewDirection, reflectDirection), 0.0f), 
-								uMaterial.Shininess);
-	vec3 specular = uLight.Specular * specularStrength 
-					* vec3(texture(uMaterial.SpecularMap, texCoord));
-
-	vec3 result = emmisive + ambient + diffuse + specular;
+	result += CalcSpotLight(uSpotLight, norm, fragPosition, viewDir);
 	fragColor = vec4(result, 1.0f);
+}
+
+vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir)
+{
+	vec3 lightDir = normalize(-light.Direction);
+	
+	float diff = max(dot(lightDir, normal), 0.0f);
+
+	vec3 reflectDir = reflect(-lightDir, normal);
+
+	float spec = pow(max(dot(reflectDir, viewDir), 0.0f), uMaterial.Shininess);
+
+	vec3 ambient = light.Ambient * vec3(texture(uMaterial.DiffuseMap, texCoord));
+	vec3 diffuse = light.Diffuse* diff * vec3(texture(uMaterial.DiffuseMap, texCoord));
+	vec3 specular = light.Specular * spec * vec3(texture(uMaterial.SpecularMap, texCoord));
+
+	return ambient + diffuse + specular;
+}
+
+vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir)
+{
+	vec3 lightDir = normalize(light.Position - fragPos);
+
+	float diff = max(dot(lightDir, normal), 0.0f);
+
+	vec3 reflectDir = reflect(-lightDir, normal);
+	
+	float spec = pow(max(dot(reflectDir, viewDir), 0.0f), uMaterial.Shininess);
+
+	// Attenuation
+	float dist = length(light.Position - fragPos);
+	float attenuation = 1.0f / (1.0f + light.Linear * dist + 
+		light.Quadratic * dist * dist);
+
+	vec3 ambient = light.Ambient * vec3(texture(uMaterial.DiffuseMap, texCoord));
+	vec3 diffuse = light.Diffuse * diff * vec3(texture(uMaterial.DiffuseMap, texCoord));
+	vec3 specular = light.Specular * spec * vec3(texture(uMaterial.SpecularMap, texCoord));
+
+	return attenuation * (ambient + diffuse + specular);
+}
+
+vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir)
+{
+	vec3 lightDir = normalize(light.Position - fragPos);
+	float diff = max(dot(lightDir, normal), 0.0f);
+	vec3 reflectDir = reflect(-lightDir, normal);
+	float spec = pow(max(dot(reflectDir, viewDir), 0.0f), uMaterial.Shininess);
+
+	// Attenuation
+	float dist = length(light.Position - fragPos);
+	float attenuation = 1.0f / (1.0f + light.Linear * dist + 
+		light.Quadratic * dist * dist);
+
+	float theta = dot(lightDir, normalize(-light.Direction));
+	float epsilon = light.Cutoff - light.OuterCutoff;
+	float intensity = clamp((theta - light.OuterCutoff) / epsilon, 0.0f, 1.0f);
+
+	vec3 ambient = light.Ambient * vec3(texture(uMaterial.DiffuseMap, texCoord));
+	vec3 diffuse = light.Diffuse * diff * vec3(texture(uMaterial.DiffuseMap, texCoord));
+	vec3 specular = light.Specular * spec * vec3(texture(uMaterial.SpecularMap, texCoord));
+
+	return attenuation * intensity * (ambient + diffuse + specular);
 }

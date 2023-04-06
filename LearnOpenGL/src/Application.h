@@ -8,6 +8,7 @@
 
 
 class Camera;
+class Shader;
 
 
 class Application
@@ -41,6 +42,8 @@ private:
 	void initGLEW();
 	void setCallbacks();
 	void createCamera();
+
+	void setLightUniforms(const Shader& shader);
 
 private:
 	GLFWwindow* mWindow = nullptr;
