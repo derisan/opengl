@@ -4,7 +4,7 @@
 #include "VertexArray.h"
 #include "Texture.h"
 #include "Shader.h"
-
+#include "Macros.h"
 
 void Renderable::SetVertexArray(const std::shared_ptr<VertexArray>& vertexArray)
 {
@@ -131,6 +131,15 @@ void Renderable::updateITModelMatrix()
 
 std::string GetTextureUniformName(int slot)
 {
-	return "texture" + std::to_string(slot);
+	switch (slot)
+	{
+	case 0:
+		return "uMaterial.DiffuseMap";
+	case 1:
+		return "uMaterial.SpecularMap";
+	default:
+		ASSERT(false);
+		return "";
+	}
 }
 

@@ -48,10 +48,9 @@ void Application::Run()
 {
 	auto cube = std::make_unique<Cube>();
 	cube->SetVertexArray(VertexArray::GetVertexArray("Cube"));
+	cube->SetTexture(Texture::GetTexture("Assets/Images/container2.png"));
+	cube->SetTexture(Texture::GetTexture("Assets/Images/container2_specular.png"));
 	cube->SetScale(glm::vec3{ 1.0f, 2.0f, 1.0f });
-	cube->SetAmbient(glm::vec3{ 1.0f, 0.5f, 0.31f });
-	cube->SetDiffuse(glm::vec3{ 1.0f, 0.5f, 0.31f });
-	cube->SetSpecular(glm::vec3{ 0.5f });
 	cube->SetShininess(32.0f);
 	float cubeYRotation = 0.0f;
 
@@ -79,25 +78,16 @@ void Application::Run()
 		GLCall(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
 		// Rotate 
-		lightCubePos.x = cos(static_cast<float>(glfwGetTime())) * 2.0f;
-		lightCubePos.z = sin(static_cast<float>(glfwGetTime())) * 2.0f;
-		lightCube->SetPosition(lightCubePos);
-		cubeYRotation += 30.0f * mDeltaTime;
-		cube->SetRotation(glm::vec3{ 0.0f, cubeYRotation, 0.0f });
+		//lightCubePos.x = cos(static_cast<float>(glfwGetTime())) * 2.0f;
+		//lightCubePos.z = sin(static_cast<float>(glfwGetTime())) * 2.0f;
+		//lightCube->SetPosition(lightCubePos);
+		//cubeYRotation += 30.0f * mDeltaTime;
+		//cube->SetRotation(glm::vec3{ 0.0f, cubeYRotation, 0.0f });
 
 		defaultShader.Bind();
 		defaultShader.SetUniform3f("uLight.Position", lightCubePos);
-
-		glm::vec3 lightColor{ 0.0f };
-		lightColor.x = sin(static_cast<float>(glfwGetTime()) * 2.0f);
-		lightColor.y = sin(static_cast<float>(glfwGetTime()) * 0.7f);
-		lightColor.z = sin(static_cast<float>(glfwGetTime()) * 1.3f);
-
-		auto diffuseLightColor = lightColor * 0.5f;
-		auto ambientLightColor = lightColor * 0.1f;
-
-		defaultShader.SetUniform3f("uLight.Ambient", ambientLightColor);
-		defaultShader.SetUniform3f("uLight.Diffuse", diffuseLightColor);
+		defaultShader.SetUniform3f("uLight.Ambient", glm::vec3{ 0.2f });
+		defaultShader.SetUniform3f("uLight.Diffuse", glm::vec3{ 0.5f });
 		defaultShader.SetUniform3f("uLight.Specular", glm::vec3{ 1.0f });
 		defaultShader.SetUniform3f("uViewerPosition", mCamera->GetCameraPos());
 		mCamera->Bind(defaultShader);

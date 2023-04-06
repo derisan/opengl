@@ -3,9 +3,8 @@
 // struct
 struct Material
 {
-	vec3 Ambient;
-	vec3 Diffuse;
-	vec3 Specular;
+	sampler2D DiffuseMap;
+	sampler2D SpecularMap;
 	float Shininess;
 };
 
@@ -33,20 +32,22 @@ uniform Light    uLight;
 void main()
 {
 	// Ambient
-	vec3 ambient = uLight.Ambient * uMaterial.Ambient;
+	vec3 ambient = uLight.Ambient * vec3(texture(uMaterial.DiffuseMap, texCoord));
 
 	// Diffuse
 	vec3 lightDirection = normalize(uLight.Position - fragPosition);
 	vec3 fragNormal = normalize(normal);
 	float diffuseStrength = max(dot(lightDirection, fragNormal), 0.0f);
-	vec3 diffuse = uLight.Diffuse * (diffuseStrength * uMaterial.Diffuse);
+	vec3 diffuse = uLight.Diffuse * diffuseStrength 
+					* vec3(texture(uMaterial.DiffuseMap, texCoord));
 
 	// Specular
 	vec3 viewDirection = normalize(uViewerPosition - fragPosition);
 	vec3 reflectDirection = reflect(-lightDirection, fragNormal);
 	float specularStrength = pow(max(dot(viewDirection, reflectDirection), 0.0f), 
 								uMaterial.Shininess);
-	vec3 specular = uLight.Specular * (specularStrength * uMaterial.Specular);
+	vec3 specular = uLight.Specular * specularStrength 
+					* vec3(texture(uMaterial.SpecularMap, texCoord));
 
 	vec3 result = ambient + diffuse + specular;
 	fragColor = vec4(result, 1.0f);
